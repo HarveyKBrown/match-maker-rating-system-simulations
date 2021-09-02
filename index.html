@@ -1,30 +1,20 @@
 <html>
-<head>
-	<title>Glicko 2 Testing</title>
-</head>
-<body style="background-color:whitesmoke;">
-	<canvas id="graph1" width="1000" height = "200" style="border:4px solid #000000; background-color: white;">Browser does not support canvas element, use firefox you caveman!</canvas>
-	<canvas id="graph2" width="1000" height = "200" style="border:solid #000000; background-color: white;  border-width:0px 4px 4px 4px;">Browser does not support canvas element, use firefox you caveman!</canvas>
-	<script src="glicko2.js"></script>
-	<script>
-		var settings = {
-			// tau : "Reasonable choices are between 0.3 and 1.2, though the system should be tested to decide which value results in greatest predictive accuracy."
-			tau : 0.5,
-			// rating : default rating
-			rating : 1500,
-			//rd : Default rating deviation. small number = good confidence on the rating accuracy
-			rd : 200,
-			//vol : Default volatility (expected fluctation on the player rating)
-			vol : 0.01
-		};
-		var ranking = new glicko2.Glicko2(settings);
-		let users = new Array();
-		const SAMPLE_SIZE = 100;
-		const SKILL_RANGE = 100;
+	<head>
+		<title>Glicko 2 Testing</title>
+	</head>
+	<body style="background-color:whitesmoke;">
+		<canvas id="graph1" width="1000" height = "200" style="border:4px solid #000000; background-color: white;">Browser does not support canvas element, use firefox you caveman!</canvas>
+		<canvas id="graph2" width="1000" height = "200" style="border:solid #000000; background-color: white;  border-width:0px 4px 4px 4px;">Browser does not support canvas element, use firefox you caveman!</canvas>
+		<script src="glicko2.js"></script>
+		<script>
+			let users = new Array();
+			const SAMPLE_SIZE = 100;
+			const SKILL_RANGE = 100;
+			const MAX_RATING = 20;
 
 		function generateUsers() {
 			for (i = 0; i < SAMPLE_SIZE; i++) {
-				users.push({realSkill: (randn_bm()+3.1)*15, glicko:ranking.makePlayer(1500, 200, 0.01)});
+				users.push({realSkill: (randn_bm()+3.1)*15, rating: 7});
 			}
 		}
 
@@ -65,13 +55,16 @@
 			let fighterA = users[Math.floor(Math.random() * SAMPLE_SIZE)];
 			let fighterB = users[Math.floor(Math.random() * SAMPLE_SIZE)];
 			if (fighterA !== fighterB) {
-				let probability = fighterA.realSkill / (fighterA.realSkill + fighterB.realSkill);
-				//let win = (Math.random() < probability) ? 1 : 0;
-				//let win = (fighterA.realSkill > fighterB.realSkill) ? 1 : 0;
-				let win = (fighterA.realSkill + Math.floor(Math.random() * SKILL_RANGE * 0.1) > fighterB.realSkill) ? 1 : 0;
-				var matches = [];
-				matches.push([fighterA.glicko, fighterB.glicko, win]);
-				ranking.updateRatings(matches);
+				//let probability = fighterA.realSkill / (fighterA.realSkill + fighterB.realSkill);
+				//let win = (Math.random() < probability);
+				//let win = (Math.random() < 0.5);
+				//let win = (fighterA.realSkill > fighterB.realSkill);
+				let win = (fighterA.realSkill * (20 - fighterA.rating) * fighterB.rating > fighterB.realSkill* (20 - fighterB.rating) * fighterA.rating);
+				let scoreChange = (win) ? 1 : -1;
+				fighterA.rating += scoreChange;
+				fighterA.rating = clamp(fighterA.rating, 0, MAX_RATING);
+				fighterB.rating += -scoreChange;
+				fighterB.rating = clamp(fighterB.rating, 0, MAX_RATING);
 			}
 		}
 
@@ -81,21 +74,22 @@
 				drawSquare([c.width / SAMPLE_SIZE * i, c.height / SKILL_RANGE * (SKILL_RANGE - users[i].realSkill)], 'black');
 			}
 		}
-		function drawGlickoGraph() {
+		function drawRatingGraph() {
 			for (i = 0; i < SAMPLE_SIZE; i++) {
-				const MAX_RATING = 3000;
-				drawSquare2([c2.width / SAMPLE_SIZE * i, c2.height / MAX_RATING * (MAX_RATING - users[i].glicko.getRating())]);
+				drawSquare2([c2.width / SAMPLE_SIZE * i, c2.height / MAX_RATING * (MAX_RATING - users[i].rating)]);
 			}
 		}
+
+		const clamp = (num, min, max) => Math.min(Math.max(num, min), max);
 
 		generateUsers();
 		drawSkillGraph();
 		for (i = 0; i < 20000; i++) {
 			fight();
 		}
-		drawGlickoGraph();
-		console.log(users[0].glicko.getRating())
-		console.log(users[99].glicko.getRating())
+		drawRatingGraph();
+		console.log(users[0].rating)
+		console.log(users[99].rating)
 
 
 	</script>
