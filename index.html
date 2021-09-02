@@ -1,0 +1,103 @@
+<html>
+<head>
+	<title>Glicko 2 Testing</title>
+</head>
+<body style="background-color:whitesmoke;">
+	<canvas id="graph1" width="1000" height = "200" style="border:4px solid #000000; background-color: white;">Browser does not support canvas element, use firefox you caveman!</canvas>
+	<canvas id="graph2" width="1000" height = "200" style="border:solid #000000; background-color: white;  border-width:0px 4px 4px 4px;">Browser does not support canvas element, use firefox you caveman!</canvas>
+	<script src="glicko2.js"></script>
+	<script>
+		var settings = {
+			// tau : "Reasonable choices are between 0.3 and 1.2, though the system should be tested to decide which value results in greatest predictive accuracy."
+			tau : 0.5,
+			// rating : default rating
+			rating : 1500,
+			//rd : Default rating deviation. small number = good confidence on the rating accuracy
+			rd : 200,
+			//vol : Default volatility (expected fluctation on the player rating)
+			vol : 0.06
+		};
+		var ranking = new glicko2.Glicko2(settings);
+		let users = new Array();
+		const SAMPLE_SIZE = 100;
+		const SKILL_RANGE = 100;
+
+		function generateUsers() {
+			for (i = 0; i < SAMPLE_SIZE; i++) {
+				users.push({realSkill: (randn_bm()+3.1)*15, glicko:ranking.makePlayer(1500, 200, 0.06)});
+			}
+		}
+
+		var c = document.getElementById("graph1");
+		var ctx = c.getContext("2d");
+		var c2 = document.getElementById("graph2");
+		var ctx2 = c2.getContext("2d");
+
+		function drawSquare(pos, color = 'red') {
+			let x = pos[0];
+			let y = pos[1];
+			ctx.save();
+			ctx.fillStyle = color;
+			ctx.translate(x, y);
+			ctx.fillRect(0, 0, 5, 5);
+			ctx.restore();
+		}
+
+		// Standard Normal variate using Box-Muller transform.
+		function randn_bm() {
+			var u = 0, v = 0;
+			while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+			while(v === 0) v = Math.random();
+			return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+		}
+
+		function drawSquare2(pos, color = 'red') {
+			let x = pos[0];
+			let y = pos[1];
+			ctx2.save();
+			ctx2.fillStyle = color;
+			ctx2.translate(x, y);
+			ctx2.fillRect(0, 0, 5, 5);
+			ctx2.restore();
+		}
+
+		function fight() {
+			let fighterA = users[Math.floor(Math.random() * SAMPLE_SIZE)];
+			let fighterB = users[Math.floor(Math.random() * SAMPLE_SIZE)];
+			if (fighterA !== fighterB) {
+				let probability = fighterA.realSkill / (fighterA.realSkill + fighterB.realSkill);
+				//let win = (Math.random() < probability) ? 1 : 0;
+				//let win = (fighterA.realSkill > fighterB.realSkill) ? 1 : 0;
+				let win = (fighterA.realSkill + Math.floor(Math.random() * SKILL_RANGE * 0.05) > fighterB.realSkill) ? 1 : 0;
+				var matches = [];
+				matches.push([fighterA.glicko, fighterB.glicko, win]);
+				ranking.updateRatings(matches);
+			}
+		}
+
+		function drawSkillGraph() {
+			users.sort(function(a, b){return a.realSkill-b.realSkill;})
+			for (i = 0; i < SAMPLE_SIZE; i++) {
+				drawSquare([c.width / SAMPLE_SIZE * i, c.height / SKILL_RANGE * (SKILL_RANGE - users[i].realSkill)], 'black');
+			}
+		}
+		function drawGlickoGraph() {
+			for (i = 0; i < SAMPLE_SIZE; i++) {
+				const MAX_RATING = 3000;
+				drawSquare2([c2.width / SAMPLE_SIZE * i, c2.height / MAX_RATING * (MAX_RATING - users[i].glicko.getRating())]);
+			}
+		}
+
+		generateUsers();
+		drawSkillGraph();
+		for (i = 0; i < 10000; i++) {
+			fight();
+		}
+		drawGlickoGraph();
+		console.log(users[0].glicko.getRating())
+		console.log(users[99].glicko.getRating())
+
+
+	</script>
+</body>
+</html>
