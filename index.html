@@ -14,7 +14,7 @@
 
 		function generateUsers() {
 			for (i = 0; i < SAMPLE_SIZE; i++) {
-				users.push({realSkill: (randn_bm()+3.1)*15, rating: 7});
+				users.push({realSkill: randn_bm()*8 +50, rating: 7});
 			}
 		}
 
@@ -38,7 +38,7 @@
 			var u = 0, v = 0;
 			while(u === 0) u = Math.random(); //Converting [0,1) to (0,1)
 			while(v === 0) v = Math.random();
-			return Math.sqrt( -2.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
+			return Math.sqrt( -15.0 * Math.log( u ) ) * Math.cos( 2.0 * Math.PI * v );
 		}
 
 		function drawSquare2(pos, color = 'red') {
@@ -60,9 +60,9 @@
 				//let win = (Math.random() < 0.5);
 				//let win = (fighterA.realSkill * Math.random > fighterB.realSkill);
 				//let win = (fighterA.realSkill * (20 - fighterA.rating) * fighterB.rating > fighterB.realSkill* (20 - fighterB.rating) * fighterA.rating);
-				fighterA.rating += win ? 2 : -1;
+				fighterA.rating += win ? 1 : -1;
 				fighterA.rating = clamp(fighterA.rating, 0, MAX_RATING);
-				fighterB.rating += !win ? 2 : -1; // win is if player A wins
+				fighterB.rating += !win ? 1 : -1; // win is if player A wins
 				fighterB.rating = clamp(fighterB.rating, 0, MAX_RATING);
 			}
 		}
@@ -87,8 +87,8 @@
 			fight();
 		}
 		drawRatingGraph();
-		console.log(users[0].rating)
-		console.log(users[99].rating)
+		console.log(users[0].realSkill)
+		console.log(users[99].realSkill)
 
 
 	</script>
