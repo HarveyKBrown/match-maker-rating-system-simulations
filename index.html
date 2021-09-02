@@ -10,7 +10,7 @@
 			let users = new Array();
 			const SAMPLE_SIZE = 100;
 			const SKILL_RANGE = 100;
-			const MAX_RATING = 20;
+			const RATING_RANGE = 25;
 
 		function generateUsers() {
 			for (i = 0; i < SAMPLE_SIZE; i++) {
@@ -54,17 +54,25 @@
 		function fight() {
 			let fighterA = users[Math.floor(Math.random() * SAMPLE_SIZE)];
 			let fighterB = users[Math.floor(Math.random() * SAMPLE_SIZE)];
+			let aSkill = evaluateSkill(fighterA.realSkill, fighterA.rating);
+			let bSkill = evaluateSkill(fighterB.realSkill, fighterB.rating);
 			if (fighterA !== fighterB) {
-				let probability = fighterA.realSkill / (fighterA.realSkill + fighterB.realSkill);
+				let probability = aSkill / (aSkill + bSkill);
 				let win = (Math.random() < probability);
 				//let win = (Math.random() < 0.5);
 				//let win = (fighterA.realSkill * Math.random > fighterB.realSkill);
 				//let win = (fighterA.realSkill * (20 - fighterA.rating) * fighterB.rating > fighterB.realSkill* (20 - fighterB.rating) * fighterA.rating);
 				fighterA.rating += win ? 1 : -1;
-				fighterA.rating = clamp(fighterA.rating, 0, MAX_RATING);
+				fighterA.rating = clamp(fighterA.rating, 0, RATING_RANGE);
 				fighterB.rating += !win ? 1 : -1; // win is if player A wins
-				fighterB.rating = clamp(fighterB.rating, 0, MAX_RATING);
+				fighterB.rating = clamp(fighterB.rating, 0, RATING_RANGE);
 			}
+		}
+
+		function evaluateSkill(skill, rank) {
+			let skillRangeDifference = skill/SKILL_RANGE < rank/RATING_RANGE;
+			if (skillRangeDifference > 0) return skill / Math.pow(1+skillRangeDifference, 4);
+			return skill;
 		}
 
 		function drawSkillGraph() {
@@ -75,7 +83,7 @@
 		}
 		function drawRatingGraph() {
 			for (i = 0; i < SAMPLE_SIZE; i++) {
-				drawSquare2([c2.width / SAMPLE_SIZE * i, c2.height / MAX_RATING * (MAX_RATING - users[i].rating)]);
+				drawSquare2([c2.width / SAMPLE_SIZE * i, c2.height / RATING_RANGE * (RATING_RANGE - users[i].rating)]);
 			}
 		}
 
