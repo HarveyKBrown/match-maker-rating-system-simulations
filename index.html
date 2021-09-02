@@ -15,7 +15,7 @@
 			//rd : Default rating deviation. small number = good confidence on the rating accuracy
 			rd : 200,
 			//vol : Default volatility (expected fluctation on the player rating)
-			vol : 0.06
+			vol : 0.01
 		};
 		var ranking = new glicko2.Glicko2(settings);
 		let users = new Array();
@@ -24,7 +24,7 @@
 
 		function generateUsers() {
 			for (i = 0; i < SAMPLE_SIZE; i++) {
-				users.push({realSkill: (randn_bm()+3.1)*15, glicko:ranking.makePlayer(1500, 200, 0.06)});
+				users.push({realSkill: (randn_bm()+3.1)*15, glicko:ranking.makePlayer(1500, 200, 0.01)});
 			}
 		}
 
@@ -68,7 +68,7 @@
 				let probability = fighterA.realSkill / (fighterA.realSkill + fighterB.realSkill);
 				//let win = (Math.random() < probability) ? 1 : 0;
 				//let win = (fighterA.realSkill > fighterB.realSkill) ? 1 : 0;
-				let win = (fighterA.realSkill + Math.floor(Math.random() * SKILL_RANGE * 0.05) > fighterB.realSkill) ? 1 : 0;
+				let win = (fighterA.realSkill + Math.floor(Math.random() * SKILL_RANGE * 0.1) > fighterB.realSkill) ? 1 : 0;
 				var matches = [];
 				matches.push([fighterA.glicko, fighterB.glicko, win]);
 				ranking.updateRatings(matches);
@@ -90,7 +90,7 @@
 
 		generateUsers();
 		drawSkillGraph();
-		for (i = 0; i < 10000; i++) {
+		for (i = 0; i < 20000; i++) {
 			fight();
 		}
 		drawGlickoGraph();
