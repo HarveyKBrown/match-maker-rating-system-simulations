@@ -55,15 +55,14 @@
 			let fighterA = users[Math.floor(Math.random() * SAMPLE_SIZE)];
 			let fighterB = users[Math.floor(Math.random() * SAMPLE_SIZE)];
 			if (fighterA !== fighterB) {
-				//let probability = fighterA.realSkill / (fighterA.realSkill + fighterB.realSkill);
-				//let win = (Math.random() < probability);
+				let probability = fighterA.realSkill / (fighterA.realSkill + fighterB.realSkill);
+				let win = (Math.random() < probability);
 				//let win = (Math.random() < 0.5);
-				//let win = (fighterA.realSkill > fighterB.realSkill);
-				let win = (fighterA.realSkill * (20 - fighterA.rating) * fighterB.rating > fighterB.realSkill* (20 - fighterB.rating) * fighterA.rating);
-				let scoreChange = (win) ? 1 : -1;
-				fighterA.rating += scoreChange;
+				//let win = (fighterA.realSkill * Math.random > fighterB.realSkill);
+				//let win = (fighterA.realSkill * (20 - fighterA.rating) * fighterB.rating > fighterB.realSkill* (20 - fighterB.rating) * fighterA.rating);
+				fighterA.rating += win ? 2 : -1;
 				fighterA.rating = clamp(fighterA.rating, 0, MAX_RATING);
-				fighterB.rating += -scoreChange;
+				fighterB.rating += !win ? 2 : -1; // win is if player A wins
 				fighterB.rating = clamp(fighterB.rating, 0, MAX_RATING);
 			}
 		}
